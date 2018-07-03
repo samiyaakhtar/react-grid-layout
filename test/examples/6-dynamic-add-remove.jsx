@@ -26,19 +26,35 @@ class AddRemoveLayout extends React.PureComponent {
           y: 0,
           w: 2,
           h: 2,
-          add: i === (list.length - 1).toString()
+          add: i === (list.length - 1).toString(),
+          isResizable: i % 2 == 0 ? false : true
         };
       }),
+      items1: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(
+        function(i, key, list) {
+          return {
+            i: i.toString(),
+            x: i * 2,
+            y: 0,
+            w: 2,
+            h: 2,
+            add: i === (list.length - 1).toString(),
+            id: "id" + i.toString()
+          };
+        }
+      ),
       newCounter: 0,
       placeholderPosition: { x: 0, y: 0 }
     };
     this.dragApi = createDragApiRef();
+    this.dragApi1 = createDragApiRef();
 
     this.onAddItem = this.onAddItem.bind(this);
     this.onBreakpointChange = this.onBreakpointChange.bind(this);
     this.onLayoutChange = this.onLayoutChange.bind(this);
     this.dragPlaceholder = this.dragPlaceholder.bind(this);
     this.stopPlaceholder = this.stopPlaceholder.bind(this);
+    this.stopPlaceholder1 = this.stopPlaceholder1.bind(this);
   }
 
   createElement(el) {
@@ -50,25 +66,27 @@ class AddRemoveLayout extends React.PureComponent {
     };
     const i = el.add ? "+" : el.i;
     return (
-      <div key={i} data-grid={el}>
-        {el.add ? (
+      <div key={i} data-grid={el} id={"id" + i}>
+        <div>
+          {el.add ? (
+            <span
+              className="add text"
+              onClick={this.onAddItem}
+              title="You can add an item by clicking here, too."
+            >
+              Add +
+            </span>
+          ) : (
+            <span className="text">{i}</span>
+          )}
           <span
-            className="add text"
-            onClick={this.onAddItem}
-            title="You can add an item by clicking here, too."
+            className="remove"
+            style={removeStyle}
+            onClick={this.onRemoveItem.bind(this, i)}
           >
-            Add +
+            x
           </span>
-        ) : (
-          <span className="text">{i}</span>
-        )}
-        <span
-          className="remove"
-          style={removeStyle}
-          onClick={this.onRemoveItem.bind(this, i)}
-        >
-          x
-        </span>
+        </div>
       </div>
     );
   }
@@ -105,17 +123,23 @@ class AddRemoveLayout extends React.PureComponent {
     });
   }
 
-  onRemoveItem(i) {
+  onRemoveItem(i, flag = 0) {
     console.log("removing", i);
-    this.setState({ items: _.reject(this.state.items, { i: i }) });
+    if (flag === 0) {
+      this.setState({ items: _.reject(this.state.items, { i: i }) });
+    } else {
+      this.setState({ items1: _.reject(this.state.items1, { i: i }) });
+    }
   }
 
   dragPlaceholder(event, { node }) {
+    console.log("drag placeholder");
     if (this.dragApi.value) {
       const containerRect = this.container.getBoundingClientRect();
       const left = event.clientX - containerRect.left;
       const top = event.clientY - containerRect.top;
       if (left < 0 || top < 0) {
+        console.log("drag out 0");
         this.dragApi.value.dragOut({
           event,
           position: {
@@ -124,7 +148,36 @@ class AddRemoveLayout extends React.PureComponent {
           }
         });
       } else {
+        console.log("drag in 0");
         this.dragApi.value.dragIn({
+          i: "n" + this.state.newCounter,
+          w: 2,
+          h: 2,
+          event,
+          node,
+          position: {
+            left,
+            top
+          }
+        });
+      }
+    }
+    if (this.dragApi1.value) {
+      const containerRect = this.container.getBoundingClientRect();
+      const left = event.clientX - containerRect.left;
+      const top = event.clientY - containerRect.top;
+      if (left < 0 || top < 0) {
+        console.log("drag out 1");
+        this.dragApi1.value.dragOut({
+          event,
+          position: {
+            left,
+            top
+          }
+        });
+      } else {
+        console.log("drag in 1");
+        this.dragApi1.value.dragIn({
           i: "n" + this.state.newCounter,
           w: 2,
           h: 2,
@@ -139,7 +192,15 @@ class AddRemoveLayout extends React.PureComponent {
     }
   }
 
-  stopPlaceholder(event) {
+  stopPlaceholder1(event, data) {
+    var id = data.node.id;
+    var temp = this.state.items1.filter(obj => obj.id != id);
+    this.setState(state => ({
+      items1: temp
+    }));
+  }
+
+  stopPlaceholder(event, data) {
     if (this.dragApi.value) {
       const containerRect = this.container.getBoundingClientRect();
       this.dragApi.value.stop({
@@ -153,11 +214,110 @@ class AddRemoveLayout extends React.PureComponent {
         newCounter: state.newCounter + 1
       }));
     }
+    if (this.dragApi1.value) {
+      const containerRect = this.container.getBoundingClientRect();
+      this.dragApi1.value.stop({
+        event,
+        position: {
+          left: event.clientX - containerRect.left,
+          top: event.clientY - containerRect.top
+        }
+      });
+    }
+
+    var id = data.node.id;
+    var temp = this.state.items1.filter(obj => obj.id != id);
+    this.setState(state => ({
+      items1: temp
+    }));
+
+    // data.node.parentNode.removeChild(data.node);
+    // var id = event.path[2].id;
+    // // this.setState(state => ({
+    // //   newCounter: state.newCounter + 1
+    // // }));
+    // var temp = this.state.items1.filter(obj => obj.id != id);
+    // this.setState(state => ({
+    //     items1: temp
+    //   }));
+    // this.onRemoveItem(this.state.items1[0], 1);
+  }
+
+  onDragStart(event, element) {
+    console.log("drag start");
+
+    if (element) {
+      console.log("element is found");
+      console.log(element);
+    }
+  }
+
+  createRandomElements(el) {
+    return (
+      <Draggable
+        position={this.state.placeholderPosition}
+        onDrag={this.dragPlaceholder}
+        onStop={this.stopPlaceholder}
+        id={el.i}
+      >
+        <div
+          id={"id" + el.i}
+          style={{
+            width: "120px",
+            height: "120px",
+            border: "1px solid black",
+            backgroundColor: "green"
+          }}
+        >
+          {el.i}
+        </div>
+      </Draggable>
+    );
   }
 
   render() {
+    var elements1 = [],
+      elements2 = [];
+    for (var i = 0; i < this.state.items1.length; i++) {
+      if (i % 2 == 0) {
+        elements1.push(this.state.items1[i]);
+      } else {
+        elements2.push(this.state.items1[i]);
+      }
+    }
     return (
       <div>
+        <div
+          style={{
+            zIndex: 100,
+            float: "right",
+            width: "25%",
+            position: "relative",
+            right: 0,
+            overflow: "auto"
+          }}
+        >
+          Second one begins here
+          <div style={{ float: "left" }}>
+            <table style={{ width: "100%" }}>
+              <tr>
+                <td>
+                  {/* {_.map(this.state.items1, el => this.createRandomElements(el))} */}
+                  {/* {_.map(this.state.items1, el => { if (parseInt(el.i) % 2 == 0) this.createRandomElements(el)} )} */}
+                  {_.map(elements1, el => this.createRandomElements(el))}
+                </td>
+                <td>{_.map(elements2, el => this.createRandomElements(el))}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        {/* <ResponsiveReactGridLayout
+          dragApiRef={this.dragApi1}
+          onLayoutChange={this.onLayoutChange}
+          onBreakpointChange={this.onBreakpointChange}
+          onDragStart={this.onDragStart}
+        > */}
+        {/* </ResponsiveReactGridLayout> */}
         <button onClick={this.onAddItem}>Add Item</button>
         <Draggable
           position={this.state.placeholderPosition}
@@ -169,10 +329,12 @@ class AddRemoveLayout extends React.PureComponent {
           </button>
         </Draggable>
         <div ref={node => (this.container = node)}>
+          <div>First one begins here</div>
           <ResponsiveReactGridLayout
             dragApiRef={this.dragApi}
             onLayoutChange={this.onLayoutChange}
             onBreakpointChange={this.onBreakpointChange}
+            onDragStart={this.onDragStart}
           >
             {_.map(this.state.items, el => this.createElement(el))}
           </ResponsiveReactGridLayout>
