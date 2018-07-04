@@ -266,6 +266,11 @@ declare namespace ReactGridLayout {
         breakpoints?: { [P in Breakpoints]: number };
 
         /**
+         * Drag api ref object
+         */
+        dragApiRef?: DragApiRefObject;
+
+        /**
          * Number of cols. This is a breakpoint -> cols map, e.g. `{lg: 12, md: 10, ...}`.
          */
         cols?: { [P in Breakpoints]: number };
