@@ -72,7 +72,8 @@ export type Props = {
   onResize: EventCallback,
   onResizeStart: EventCallback,
   onResizeStop: EventCallback,
-  children: ReactChildrenArray<ReactElement<any>>
+  children: ReactChildrenArray<ReactElement<any>>,
+  dragApi: DragApiRefObject => void
 };
 // End Types
 
