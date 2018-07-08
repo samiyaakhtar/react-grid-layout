@@ -177,9 +177,9 @@ class AddRemoveLayout extends React.PureComponent {
 
     var id = data.node.id;
     var temp = this.state.items1.filter(obj => obj.id != id);
-    this.setState(state => ({
+    this.setState({
       items1: temp
-    }));
+    });
   }
 
   onDragStart(event, element) {

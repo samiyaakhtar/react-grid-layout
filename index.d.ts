@@ -325,10 +325,14 @@ declare namespace ReactGridLayout {
         node: HTMLElement
     };
 
+    type DragOutEvent = {
+      position: PartialPosition,
+      event: MouseEvent
+    }
     type DragApi = {
         dragIn(drapApiObj: DrapApiObj): void,
-        dragOut({ position: PartialPosition, event: MouseEvent }): void,
-        stop({ position: PartialPosition, event: MouseEvent }): void
+        dragOut(event: DragOutEvent): void,
+        stop(event: DragOutEvent): void
     };
 
     type DragApiRefObject = {
