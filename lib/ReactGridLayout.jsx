@@ -445,8 +445,12 @@ export default class ReactGridLayout extends React.Component<Props, State> {
 
     this.props.onDrag(layout, oldDragItem, l, placeholder, e, node);
 
+    // horizontal compact after vertical compact
+    let newLayout = compact(layout, this.compactType(), cols)
+    newLayout = compact(newLayout, 'horizontal', cols);
+
     this.setState({
-      layout: compact(layout, this.compactType(), cols),
+      layout: newLayout,
       activeDrag: placeholder
     });
   }
@@ -482,7 +486,10 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     this.props.onDragStop(layout, oldDragItem, l, null, e, node);
 
     // Set state
-    const newLayout = compact(layout, this.compactType(), cols);
+    let newLayout = compact(layout, this.compactType(), cols);
+    // horizontal compact after vertical compact
+    newLayout = compact(newLayout, 'horizontal', cols);
+
     const { oldLayout } = this.state;
     this.setState({
       activeDrag: null,
